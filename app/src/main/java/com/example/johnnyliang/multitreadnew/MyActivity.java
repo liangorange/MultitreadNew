@@ -42,17 +42,11 @@ public class MyActivity extends ActionBarActivity {
 
     private int countLoadTimes = 0;
 
-
-    Handler createHandler = new Handler() {
-        @Override
-        public void handleMessage(Message msg) {
-            // TODO Auto-generated method stub
-            super.handleMessage(msg);
-            createFile();
-        }
-
-    };
-
+    /**
+     * loadHandler
+     * This handler is responsible for displaying the number on the screen
+     * when new number added to the ArrayList
+     */
     Handler loadHandler = new Handler() {
         @Override
         public void handleMessage(Message msg) {
@@ -60,6 +54,10 @@ public class MyActivity extends ActionBarActivity {
         }
     };
 
+    /**
+     * progressHandler
+     * This handler is responsible for updating the the progress bar
+     */
     Handler progressHandler = new Handler() {
         @Override
         public void handleMessage(Message msg) {
@@ -94,7 +92,7 @@ public class MyActivity extends ActionBarActivity {
      * @param view
      */
     public void createFiles(View view) {
-        //progressStatus = 0;
+        // Create a new thread to have the create process runs on the background
         Thread myThread = new Thread(new Runnable(){
 
             @Override
@@ -140,11 +138,11 @@ public class MyActivity extends ActionBarActivity {
                 progressStatus += 10;
                 progressHandler.sendEmptyMessage(0);
                 try {
+                    // Sleep 1/4 second before writting next line
                     Thread.sleep(250);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
-
             }
             outputWriter.close();
 
@@ -163,22 +161,20 @@ public class MyActivity extends ActionBarActivity {
      * @param view
      */
     public void loadFiles(View view) {
+        // Setting some basic stuffs
         countLoadTimes++;
         loadList();
         progressStatus = 0;
         progressBar.setProgress(progressStatus);
 
+        // Create a new background thread to run the load file process
         Thread myThread = new Thread(new Runnable(){
 
             @Override
             public void run() {
                 // TODO Auto-generated method stub
-                try {
-                    loadAndParse();
-                    Thread.sleep(250);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
+                // Load numbers from the file and display it on the screen
+                loadAndParse();
             }
         });
         myThread.start();
@@ -191,6 +187,7 @@ public class MyActivity extends ActionBarActivity {
      * order for numbers to be displayed
      */
     public void loadList() {
+        // Set adapter with different layout depends on load times
         if (countLoadTimes % 2 == 0)
             numberAdapter = new ArrayAdapter<String>(this, R.layout.row, R.id.label, numberLoad);
         else
@@ -205,6 +202,7 @@ public class MyActivity extends ActionBarActivity {
      */
     public void loadAndParse() {
         try {
+            // Setting file input
             FileInputStream fileInput = openFileInput(fileName);
             InputStreamReader InputRead = new InputStreamReader(fileInput);
 
@@ -220,7 +218,11 @@ public class MyActivity extends ActionBarActivity {
                 progressStatus += 10;
                 // The handler will send message back every time when one number gets loaded
                 loadHandler.sendEmptyMessage(0);
+
+                // Update the progress bar's progress
                 progressHandler.sendEmptyMessage(0);
+
+                // Sleep for a quarter of a second before reading next line
                 Thread.sleep(250);
             }
 
@@ -243,10 +245,14 @@ public class MyActivity extends ActionBarActivity {
      */
     public void clearList(View view) {
         numberAdapter = null;
+        // Clear the list
         numberLoad.clear();
 
+        // Reset progress bar
         progressStatus = 0;
         progressBar.setProgress(progressStatus);
+
+        // Reset TextView
         status.setText(progressStatus + "/" + progressBar.getMax());
 
         listView.setAdapter(numberAdapter);
